@@ -114,3 +114,60 @@ arm.execute(plan);
 ```
 
 1. `gripper` 그룹도 `MoveGroupInterface`로 설정되었기 때문에, 그리퍼 동작은 preset 상태 (`"open"`, `"close"`)로 설정 후 실행된다. 내부적으로 `/gripper_controller/gripper_cmd` 액션 사용한다. 이름 기반 target은 SRDF 내 `group_states`에서 정의되어 있어야 한다.
+
+```bash
+// 5. 그리퍼 제어
+gripper.setNamedTarget("close");
+gripper.move();
+```
+
+### openmanipulator-x + camera (로봇팔 최종 작동)
+
+- opencr setting (bashrc에 넣어놓기)
+
+```bash
+$ export OPENCR_PORT=/dev/ttyACM0
+$ export OPENCR_MODEL=turtlebot3_manipulation
+$ rm -rf ./opencr_update.tar.bz2
+$ wget https://github.com/ROBOTIS-GIT/OpenCR-Binaries/raw/master/turtlebot3/ROS2/latest/opencr_update.tar.bz2
+$ tar -xvf opencr_update.tar.bz2
+$ cd ./opencr_update
+$ ./update.sh $OPENCR_PORT $OPENCR_MODEL.opencr
+```
+
+terminal 1
+
+```bash
+cd turtlebot_ws
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+cd ..
+ros2 launch turtlebot3_manipulation_bringup hardware.launch.py
+```
+
+terminal 2
+
+```bash
+cd turtlebot_ws
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ros2 launch turtlebot3_manipulation_moveit_config move_group.launch.py
+```
+
+terminal 3
+
+```bash
+cd turtlebot_ws
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ros2 launch turtlebot3_manipulation_teleop pick_and_place.launch.py
+```
+
+terminal 4
+
+```bash
+cd turtlebot_ws
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ros2 run tf2_ros static_transform_publisher 0 0 0.06 -1.57 0 -1.57 link5 camera
+```
