@@ -24,7 +24,7 @@ auto const node = std::make_shared<rclcpp::Node>(
 
 ROS 2 시스템을 초기화하고, `pick_and_place_input`이라는 이름의 노드를 생성한다. 이 노드는 이후 MoveIt 인터페이스와의 통신에 사용된다.
 
-1. MoveIt 인터페이스 생성
+2. MoveIt 인터페이스 생성
 
 ```bash
 using moveit::planning_interface::MoveGroupInterface;
@@ -34,7 +34,7 @@ auto gripper = MoveGroupInterface(node, "gripper");
 
 `MoveGroupInterface`를 사용하여 로봇 팔(`arm`)과 그리퍼(`gripper`)의 제어 인터페이스를 생성한다. 이 인터페이스를 통해 목표 위치 설정, 경로 계획, 실행 등의 작업을 수행할 수 있다.
 
-1. 사용자로부터 목표 좌표 입력 받기
+3. 사용자로부터 목표 좌표 입력 받기
 
 ```bash
 double x, y, z;
@@ -44,7 +44,7 @@ std::cin >> x >> y >> z;
 
 사용자로부터 물체를 집을 목표 위치의 좌표를 입력받는다. 입력된 좌표는 이후 로봇 팔의 목표 위치로 사용된다.
 
-1. 목표 위치 설정 및 경로 계획
+4. 목표 위치 설정 및 경로 계획
 
 ```bash
 arm.setPositionTarget(x, y, z);
@@ -56,7 +56,7 @@ arm.setMaxAccelerationScalingFactor(0.5);
 
 입력받은 좌표를 로봇 팔의 목표 위치로 설정하고, 경로 계획을 위한 파라미터를 설정한다. 이후 계획된 경로를 실행한다.
 
-1. 그리퍼 제어 및 원위치 복귀
+5. 그리퍼 제어 및 원위치 복귀
 
 ```bash
 gripper.setNamedTarget("close");
@@ -89,14 +89,14 @@ gripper.move();
 auto arm = MoveGroupInterface(node, "arm");
 ```
 
-1. 내부적으로 역기구학(kinematics)을 계산하고 ROS 2 서비스 `/get_position_ik` 등을 사용하여 이 위치로 이동 가능한 joint 값 계산한다.이 단계에서 "목표" 상태가 설정되며, 경로는 아직 생성되지 않는다.
+2. 내부적으로 역기구학(kinematics)을 계산하고 ROS 2 서비스 `/get_position_ik` 등을 사용하여 이 위치로 이동 가능한 joint 값 계산한다.이 단계에서 "목표" 상태가 설정되며, 경로는 아직 생성되지 않는다.
 
 ```bash
 // 2. 목표 위치 설정
 arm.setPositionTarget(x, y, z);
 ```
 
-1. `move_group` 서비스 노드와 통신하여 실제 joint trajectory를 계산한다.
+3. `move_group` 서비스 노드와 통신하여 실제 joint trajectory를 계산한다.
 
 ```bash
 // 3. 경로 계획
@@ -104,7 +104,7 @@ moveit::planning_interface::MoveGroupInterface::Plan plan;
 bool success = (arm.plan(plan) == MoveItErrorCode::SUCCESS);
 ```
 
-1. `execute()`는 `/execute_trajectory` 액션 서버에 목표 trajectory를 전송한다. `move_group`가 이를 처리해 `/arm_controller/follow_joint_trajectory`에 실제 명령을 전달한다. `controller_manager`와 연결된 실제 제어기(controller)가 로봇을 움직인다.
+4. `execute()`는 `/execute_trajectory` 액션 서버에 목표 trajectory를 전송한다. `move_group`가 이를 처리해 `/arm_controller/follow_joint_trajectory`에 실제 명령을 전달한다. `controller_manager`와 연결된 실제 제어기(controller)가 로봇을 움직인다.
 
 ---
 
@@ -113,7 +113,7 @@ bool success = (arm.plan(plan) == MoveItErrorCode::SUCCESS);
 arm.execute(plan);
 ```
 
-1. `gripper` 그룹도 `MoveGroupInterface`로 설정되었기 때문에, 그리퍼 동작은 preset 상태 (`"open"`, `"close"`)로 설정 후 실행된다. 내부적으로 `/gripper_controller/gripper_cmd` 액션 사용한다. 이름 기반 target은 SRDF 내 `group_states`에서 정의되어 있어야 한다.
+5. `gripper` 그룹도 `MoveGroupInterface`로 설정되었기 때문에, 그리퍼 동작은 preset 상태 (`"open"`, `"close"`)로 설정 후 실행된다. 내부적으로 `/gripper_controller/gripper_cmd` 액션 사용한다. 이름 기반 target은 SRDF 내 `group_states`에서 정의되어 있어야 한다.
 
 ```bash
 // 5. 그리퍼 제어
